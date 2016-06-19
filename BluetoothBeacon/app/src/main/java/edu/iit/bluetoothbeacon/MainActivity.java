@@ -4,19 +4,16 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.HashMap;
 import java.util.UUID;
 
 public class MainActivity extends Activity {
@@ -30,25 +27,27 @@ public class MainActivity extends Activity {
 
     private TextView messages;
     private BluetoothAdapter adapter;
+    private ScrollView scrollView;
+    private String activeDevice;
+    private HashMap<String, Integer> devicesRssi;
+    private HashMap<String, Integer> devicesColors;
+    final private int[] colors = {Color.BLUE, Color.CYAN, Color.DKGRAY, Color.GREEN, Color.MAGENTA, Color.LTGRAY};
+    private int colorIndex = 0;
 
     //private HashSet<String> mDevicesFound;
-
-    private LeScanCallback scanCallback = new LeScanCallback() {
-        @Override
-        public void onLeScan(BluetoothDevice bluetoothDevice, int rssi, byte[] bytes) {
-            //mDevicesFound.add(bluetoothDevice.getAddress());
-            writeLine("Address: " + bluetoothDevice + " | RSSI: "+ rssi);
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
+        scrollView = (ScrollView) findViewById(R.id.scrollView);
 
         messages = (TextView) findViewById(R.id.messages);
         adapter = BluetoothAdapter.getDefaultAdapter();
-        //mDevicesFound = new HashSet<>();
+
+        devicesRssi = new HashMap<>();
+        devicesColors = new HashMap<>();
     }
 
     @Override
@@ -63,6 +62,36 @@ public class MainActivity extends Activity {
         super.onStop();
         adapter.stopLeScan(scanCallback);
     }
+
+    private LeScanCallback scanCallback = new LeScanCallback() {
+        @Override
+        public void onLeScan(BluetoothDevice bluetoothDevice, int rssi, byte[] bytes) {
+            //mDevicesFound.add(bluetoothDevice.getAddress());
+
+            if(!devicesColors.containsKey(bluetoothDevice.getAddress())){
+                devicesColors.put(bluetoothDevice.getAddress(), colors[colorIndex % colors.length]);
+                colorIndex++;
+            }
+            devicesRssi.put(bluetoothDevice.getAddress(), rssi);
+
+            if(activeDevice == null){
+                activeDevice = bluetoothDevice.getAddress();
+
+                for (String address : devicesRssi.keySet()) {
+                    writeLine("Address: " + address + " | RSSI: "+ devicesRssi.get(address));
+                }
+            } else {
+                if(devicesRssi.get(bluetoothDevice.getAddress()) > devicesRssi.get(activeDevice)) {
+                    scrollView.setBackgroundColor(devicesColors.get(bluetoothDevice.getAddress()));
+                    activeDevice = bluetoothDevice.getAddress();
+
+                    for (String address : devicesRssi.keySet()) {
+                        writeLine("Address: " + address + " | RSSI: "+ devicesRssi.get(address));
+                    }
+                }
+            }
+        }
+    };
 
     private void writeLine(final CharSequence text) {
         runOnUiThread(new Runnable() {
