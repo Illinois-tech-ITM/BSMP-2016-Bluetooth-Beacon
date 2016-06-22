@@ -6,10 +6,8 @@ import android.bluetooth.BluetoothAdapter.LeScanCallback;
 import android.bluetooth.BluetoothDevice;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -25,35 +23,41 @@ public class MainActivity extends Activity {
     // UUID for the BTLE client characteristic which is necessary for notifications.
     public static UUID CLIENT_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
-    private TextView messages;
-    private BluetoothAdapter adapter;
+    public final int DISTANCE_DIFF = 20;
+
+    private LinearLayout rootLayout;
     private ScrollView scrollView;
+    private LinearLayout inScroll;
+    private BluetoothAdapter adapter;
     private String activeDevice;
     private HashMap<String, Integer> devicesRssi;
     private HashMap<String, Integer> devicesColors;
+    private HashMap<String, TextView> devicesViews;
     final private int[] colors = {Color.BLUE, Color.CYAN, Color.DKGRAY, Color.GREEN, Color.MAGENTA, Color.LTGRAY};
     private int colorIndex = 0;
-
-    //private HashSet<String> mDevicesFound;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        rootLayout = new LinearLayout(this);
+        rootLayout.setOrientation(LinearLayout.VERTICAL);
+        setContentView(rootLayout);
+        scrollView = new ScrollView(this);
+        inScroll = new LinearLayout(this);
+        inScroll.setOrientation(LinearLayout.VERTICAL);
+        scrollView.addView(inScroll);
+        rootLayout.addView(scrollView);
 
-        setContentView(R.layout.activity_main);
-        scrollView = (ScrollView) findViewById(R.id.scrollView);
-
-        messages = (TextView) findViewById(R.id.messages);
         adapter = BluetoothAdapter.getDefaultAdapter();
 
         devicesRssi = new HashMap<>();
         devicesColors = new HashMap<>();
+        devicesViews = new HashMap<>();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        writeLine("Scanning for devices...");
         adapter.startLeScan(scanCallback);
     }
 
@@ -63,56 +67,40 @@ public class MainActivity extends Activity {
         adapter.stopLeScan(scanCallback);
     }
 
+    private void addTextView(TextView view, String text, String deviceAddress){
+        TextView deviceInfoView = view;
+        deviceInfoView.setText(text);
+        inScroll.addView(deviceInfoView, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0));
+        devicesViews.put(deviceAddress, deviceInfoView);
+    }
+
+    private void updateViews(){
+        rootLayout.invalidate();
+        /*for (String address : devicesViews.keySet()) {
+            devicesViews.get(address).invalidate();
+        }*/
+    }
+
     private LeScanCallback scanCallback = new LeScanCallback() {
         @Override
         public void onLeScan(BluetoothDevice bluetoothDevice, int rssi, byte[] bytes) {
-            //mDevicesFound.add(bluetoothDevice.getAddress());
-
             if(!devicesColors.containsKey(bluetoothDevice.getAddress())){
                 devicesColors.put(bluetoothDevice.getAddress(), colors[colorIndex % colors.length]);
                 colorIndex++;
+                addTextView(new TextView(MainActivity.this), bluetoothDevice.getAddress() + ": " + rssi, bluetoothDevice.getAddress());
             }
             devicesRssi.put(bluetoothDevice.getAddress(), rssi);
+            devicesViews.get(bluetoothDevice.getAddress()).setText(bluetoothDevice.getAddress() + ": " + rssi);
 
             if(activeDevice == null){
                 activeDevice = bluetoothDevice.getAddress();
-
-                for (String address : devicesRssi.keySet()) {
-                    writeLine("Address: " + address + " | RSSI: "+ devicesRssi.get(address));
-                }
             } else {
-                if(devicesRssi.get(bluetoothDevice.getAddress()) > devicesRssi.get(activeDevice)) {
-                    scrollView.setBackgroundColor(devicesColors.get(bluetoothDevice.getAddress()));
+                if(devicesRssi.get(bluetoothDevice.getAddress()) > devicesRssi.get(activeDevice) + DISTANCE_DIFF) {
+                    inScroll.setBackgroundColor(devicesColors.get(bluetoothDevice.getAddress()));
                     activeDevice = bluetoothDevice.getAddress();
-
-                    for (String address : devicesRssi.keySet()) {
-                        writeLine("Address: " + address + " | RSSI: "+ devicesRssi.get(address));
-                    }
                 }
             }
+            updateViews();
         }
     };
-
-    private void writeLine(final CharSequence text) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                messages.append(text);
-                messages.append("\n");
-            }
-        });
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-        return super.onOptionsItemSelected(item);
-    }
-
 }
