@@ -4,74 +4,85 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.UUID;
+import java.util.HashMap;
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
 
-    // UUIDs for UAT service and associated characteristics.
-    public static UUID UART_UUID = UUID.fromString("6E400001-B5A3-F393-E0A9-E50E24DCCA9E");
-    public static UUID TX_UUID = UUID.fromString("6E400002-B5A3-F393-E0A9-E50E24DCCA9E");
-    public static UUID RX_UUID = UUID.fromString("6E400003-B5A3-F393-E0A9-E50E24DCCA9E");
-    // UUID for the BTLE client characteristic which is necessary for notifications.
-    public static UUID CLIENT_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+    private final static int MIN_RSSI = -70;
+    private final static int NEARBY_RSSI = -40;
 
-    private TextView messages;
-    private BluetoothAdapter adapter;
+    private BluetoothAdapter mAdapter;
+    private BluetoothDevice mActiveDevice;
+    private HashMap<BluetoothDevice, Integer> mDevicesList; //key: Beacon | value: RSSI (sinal strength)
 
-    //private HashSet<String> mDevicesFound;
-
-    private LeScanCallback scanCallback = new LeScanCallback() {
-        @Override
-        public void onLeScan(BluetoothDevice bluetoothDevice, int rssi, byte[] bytes) {
-            //mDevicesFound.add(bluetoothDevice.getAddress());
-            writeLine("Address: " + bluetoothDevice + " | RSSI: "+ rssi);
-        }
-    };
+    private TextView mTitleTextView;
+    private TextView mDescriptionTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        messages = (TextView) findViewById(R.id.messages);
-        adapter = BluetoothAdapter.getDefaultAdapter();
-        //mDevicesFound = new HashSet<>();
+        mAdapter = BluetoothAdapter.getDefaultAdapter();
+        mDevicesList = new HashMap<>();
+        mTitleTextView = (TextView) findViewById(R.id.titleTextView);
+        mDescriptionTextView = (TextView) findViewById(R.id.descTextView);
+        mDescriptionTextView.setVisibility(View.GONE);
+
     }
+
+    private LeScanCallback scanCallback = new LeScanCallback() {
+        @Override
+        public void onLeScan(BluetoothDevice bluetoothDevice, int rssi, byte[] bytes) {
+            if (bluetoothDevice.getName() == null || !bluetoothDevice.getName().matches("DVC\\d\\d\\d\\d")) return;
+            Log.d("Test", "Address: " + bluetoothDevice + " | RSSI: "+ rssi);
+            mDevicesList.put(bluetoothDevice, rssi);
+            if (mActiveDevice == null && rssi > NEARBY_RSSI){
+                mActiveDevice = bluetoothDevice;
+                updateView(bluetoothDevice.getName());
+                return;
+            }
+
+            if (mActiveDevice != null && rssi - mDevicesList.get(mActiveDevice) > 20){
+                mActiveDevice = bluetoothDevice;
+                updateView(bluetoothDevice.getName());
+            } else if (mActiveDevice != null && bluetoothDevice.getAddress().equals(mActiveDevice.getAddress()) && rssi < MIN_RSSI){
+                mActiveDevice = null;
+                updateView(":(");
+                mDescriptionTextView.setVisibility(View.GONE);
+            }
+
+
+        }
+    };
 
     @Override
     protected void onResume() {
         super.onResume();
-        writeLine("Scanning for devices...");
-        adapter.startLeScan(scanCallback);
+        Log.d("Test", "Scanning for devices...");
+        mAdapter.startLeScan(scanCallback);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        adapter.stopLeScan(scanCallback);
+        mAdapter.stopLeScan(scanCallback);
     }
 
-    private void writeLine(final CharSequence text) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                messages.append(text);
-                messages.append("\n");
-            }
-        });
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        return true;
     }
 
     @Override
@@ -84,6 +95,11 @@ public class MainActivity extends Activity {
 //            return true;
 //        }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void updateView(String title){
+        mTitleTextView.setText(title);
+        mDescriptionTextView.setVisibility(View.VISIBLE);
     }
 
 }
