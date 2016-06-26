@@ -1,6 +1,5 @@
 package edu.iit.bluetoothbeacon;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
 import android.bluetooth.BluetoothDevice;
@@ -15,10 +14,16 @@ import android.widget.TextView;
 
 import java.util.HashMap;
 
-public class MainActivity extends AppCompatActivity {
+import edu.iit.bluetoothbeacon.models.Masterpiece;
+
+import static android.view.View.GONE;
+
+public class MainActivity extends AppCompatActivity implements OnResponseReceivedListener {
 
     private final static int MIN_RSSI = -70;
-    private final static int NEARBY_RSSI = -40;
+    private final static int NEARBY_RSSI = -55;
+
+    private Controller controller;
 
     private BluetoothAdapter mAdapter;
     private BluetoothDevice mActiveDevice;
@@ -26,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView mTitleTextView;
     private TextView mDescriptionTextView;
+
+    private String language = "pt-br";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,8 +43,9 @@ public class MainActivity extends AppCompatActivity {
         mDevicesList = new HashMap<>();
         mTitleTextView = (TextView) findViewById(R.id.titleTextView);
         mDescriptionTextView = (TextView) findViewById(R.id.descTextView);
-        mDescriptionTextView.setVisibility(View.GONE);
+        mDescriptionTextView.setVisibility(GONE);
 
+        controller = Controller.getInstance(this, this);
     }
 
     private LeScanCallback scanCallback = new LeScanCallback() {
@@ -48,17 +56,20 @@ public class MainActivity extends AppCompatActivity {
             mDevicesList.put(bluetoothDevice, rssi);
             if (mActiveDevice == null && rssi > NEARBY_RSSI){
                 mActiveDevice = bluetoothDevice;
-                updateView(bluetoothDevice.getName());
+                updateView("Requesting data", null);
+                controller.requestMasterpieceInfo(bluetoothDevice.getName().toLowerCase(), language);
                 return;
             }
 
             if (mActiveDevice != null && rssi - mDevicesList.get(mActiveDevice) > 20){
                 mActiveDevice = bluetoothDevice;
-                updateView(bluetoothDevice.getName());
+                //updateView(bluetoothDevice.getTitle());
+                updateView("Requesting data", null);
+                controller.requestMasterpieceInfo(bluetoothDevice.getName().toLowerCase(), language);
             } else if (mActiveDevice != null && bluetoothDevice.getAddress().equals(mActiveDevice.getAddress()) && rssi < MIN_RSSI){
                 mActiveDevice = null;
-                updateView(":(");
-                mDescriptionTextView.setVisibility(View.GONE);
+                updateView(":(", null);
+                mDescriptionTextView.setVisibility(GONE);
             }
 
 
@@ -86,6 +97,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public void OnResponseReceived(Masterpiece mp, boolean error) {
+        if(!error){
+            updateView(mp.getTitle(), mp.getContent());
+            Log.d("Response", mp.getTitle() + ": " + mp.getContent());
+        } else { // Unsuccessful response
+            updateView(":(", null);
+            mDescriptionTextView.setVisibility(View.GONE);
+            Log.d("Response", "Error");
+        }
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -97,9 +120,11 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void updateView(String title){
+    private void updateView(String title, String content){
         mTitleTextView.setText(title);
-        mDescriptionTextView.setVisibility(View.VISIBLE);
+        if(content != null) {
+            mDescriptionTextView.setText(content);
+            mDescriptionTextView.setVisibility(View.VISIBLE);
+        }
     }
-
 }
