@@ -3,13 +3,16 @@ package edu.iit.bluetoothbeacon;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
 import android.bluetooth.BluetoothDevice;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import java.util.HashMap;
@@ -32,7 +35,8 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
     private TextView mTitleTextView;
     private TextView mDescriptionTextView;
 
-    private String language = "pt-br";
+    private String mCurrentLanguage = "pt-br";
+    private MenuItem mLanguageMenuItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
             if (mActiveDevice == null && rssi > NEARBY_RSSI){
                 mActiveDevice = bluetoothDevice;
                 updateView("Requesting data", null);
-                controller.requestMasterpieceInfo(bluetoothDevice.getName().toLowerCase(), language);
+                controller.requestMasterpieceInfo(bluetoothDevice.getName().toLowerCase(), mCurrentLanguage);
                 return;
             }
 
@@ -65,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
                 mActiveDevice = bluetoothDevice;
                 //updateView(bluetoothDevice.getTitle());
                 updateView("Requesting data", null);
-                controller.requestMasterpieceInfo(bluetoothDevice.getName().toLowerCase(), language);
+                controller.requestMasterpieceInfo(bluetoothDevice.getName().toLowerCase(), mCurrentLanguage);
             } else if (mActiveDevice != null && bluetoothDevice.getAddress().equals(mActiveDevice.getAddress()) && rssi < MIN_RSSI){
                 mActiveDevice = null;
                 updateView(":(", null);
@@ -93,6 +97,8 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_main, menu);
+        mLanguageMenuItem = menu.findItem(R.id.languageMenu);
+        updateMenuTitle(mCurrentLanguage);
         return true;
     }
 
@@ -114,9 +120,30 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
+        if (id == R.id.languageMenu) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle("Select your language: ");
+
+            final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+                    MainActivity.this,
+                    android.R.layout.select_dialog_singlechoice);
+            arrayAdapter.add("pt-br");
+            arrayAdapter.add("en-us");
+
+            builder.setNegativeButton("Cancel", null);
+
+            builder.setAdapter(
+                    arrayAdapter,
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            mCurrentLanguage = arrayAdapter.getItem(which);
+                            updateMenuTitle(mCurrentLanguage);
+                        }
+                    });
+            builder.show();
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -126,5 +153,9 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
             mDescriptionTextView.setText(content);
             mDescriptionTextView.setVisibility(View.VISIBLE);
         }
+    }
+
+    private void updateMenuTitle(String language) {
+        mLanguageMenuItem.setTitle(language);
     }
 }
