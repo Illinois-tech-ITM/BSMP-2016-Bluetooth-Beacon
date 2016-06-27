@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
             updateView(mp.getTitle(), mp.getContent());
             Log.d("Response", mp.getTitle() + ": " + mp.getContent());
         } else { // Unsuccessful response
-            updateView(":(", null);
+            updateView(":/", null);
             mDescriptionTextView.setVisibility(View.GONE);
             Log.d("Response", "Error");
         }
@@ -138,8 +138,10 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             mCurrentLanguage = arrayAdapter.getItem(which);
+                            updateView("Requesting data", null);
                             controller.requestMasterpieceInfo(mActiveDevice.getName().toLowerCase(), mCurrentLanguage);
                             updateMenuTitle(mCurrentLanguage);
+                            mDescriptionTextView.setVisibility(GONE);
                         }
                     });
             builder.show();

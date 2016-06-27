@@ -20,7 +20,7 @@ import edu.iit.bluetoothbeacon.models.Masterpiece;
 public class Controller {
 
     // Server address *CHANGE THIS WHILE IT'S NOT ON THE CLOUD*
-    private final String URL = "http://198.37.24.137:8080/getArtwork";
+    private final String URL = "http://104.194.118.254:8080/getArtwork";
 
     private static OnResponseReceivedListener onResponseReceivedListener;
 
