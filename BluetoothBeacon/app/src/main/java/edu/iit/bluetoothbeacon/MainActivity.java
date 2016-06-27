@@ -1,106 +1,117 @@
 package edu.iit.bluetoothbeacon;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
 import android.bluetooth.BluetoothDevice;
-import android.graphics.Color;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.ScrollView;
+import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import java.util.HashMap;
-import java.util.UUID;
 
-public class MainActivity extends Activity {
+import edu.iit.bluetoothbeacon.models.Masterpiece;
 
-    // UUIDs for UAT service and associated characteristics.
-    public static UUID UART_UUID = UUID.fromString("6E400001-B5A3-F393-E0A9-E50E24DCCA9E");
-    public static UUID TX_UUID = UUID.fromString("6E400002-B5A3-F393-E0A9-E50E24DCCA9E");
-    public static UUID RX_UUID = UUID.fromString("6E400003-B5A3-F393-E0A9-E50E24DCCA9E");
-    // UUID for the BTLE client characteristic which is necessary for notifications.
-    public static UUID CLIENT_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+import static android.view.View.GONE;
 
-    private TextView messages;
-    private BluetoothAdapter adapter;
-    private ScrollView scrollView;
-    private String activeDevice;
-    private HashMap<String, Integer> devicesRssi;
-    private HashMap<String, Integer> devicesColors;
-    final private int[] colors = {Color.BLUE, Color.CYAN, Color.DKGRAY, Color.GREEN, Color.MAGENTA, Color.LTGRAY};
-    private int colorIndex = 0;
+public class MainActivity extends AppCompatActivity implements OnResponseReceivedListener {
+    private final static int MIN_RSSI = -70;
+    private final static int NEARBY_RSSI = -55;
 
-    //private HashSet<String> mDevicesFound;
+    private Controller controller;
+
+    private BluetoothAdapter mAdapter;
+    private BluetoothDevice mActiveDevice;
+    private HashMap<BluetoothDevice, Integer> mDevicesList; //key: Beacon | value: RSSI (sinal strength)
+
+    private TextView mTitleTextView;
+    private TextView mDescriptionTextView;
+
+    private String mCurrentLanguage = "pt-br";
+    private MenuItem mLanguageMenuItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-        scrollView = (ScrollView) findViewById(R.id.scrollView);
 
-        messages = (TextView) findViewById(R.id.messages);
-        adapter = BluetoothAdapter.getDefaultAdapter();
+        mAdapter = BluetoothAdapter.getDefaultAdapter();
+        mDevicesList = new HashMap<>();
+        mTitleTextView = (TextView) findViewById(R.id.titleTextView);
+        mDescriptionTextView = (TextView) findViewById(R.id.descTextView);
+        mDescriptionTextView.setVisibility(GONE);
 
-        devicesRssi = new HashMap<>();
-        devicesColors = new HashMap<>();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        writeLine("Scanning for devices...");
-        adapter.startLeScan(scanCallback);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        adapter.stopLeScan(scanCallback);
+        controller = Controller.getInstance(this, this);
     }
 
     private LeScanCallback scanCallback = new LeScanCallback() {
         @Override
         public void onLeScan(BluetoothDevice bluetoothDevice, int rssi, byte[] bytes) {
-            //mDevicesFound.add(bluetoothDevice.getAddress());
-
-            if(!devicesColors.containsKey(bluetoothDevice.getAddress())){
-                devicesColors.put(bluetoothDevice.getAddress(), colors[colorIndex % colors.length]);
-                colorIndex++;
+            if (bluetoothDevice.getName() == null || !bluetoothDevice.getName().matches("DVC\\d\\d\\d\\d")) return;
+            Log.d("Test", "Address: " + bluetoothDevice + " | RSSI: "+ rssi);
+            mDevicesList.put(bluetoothDevice, rssi);
+            if (mActiveDevice == null && rssi > NEARBY_RSSI){
+                mActiveDevice = bluetoothDevice;
+                updateView("Requesting data", null);
+                controller.requestMasterpieceInfo(bluetoothDevice.getName().toLowerCase(), mCurrentLanguage);
+                return;
             }
-            devicesRssi.put(bluetoothDevice.getAddress(), rssi);
 
-            if(activeDevice == null){
-                activeDevice = bluetoothDevice.getAddress();
-
-                for (String address : devicesRssi.keySet()) {
-                    writeLine("Address: " + address + " | RSSI: "+ devicesRssi.get(address));
-                }
-            } else {
-                if(devicesRssi.get(bluetoothDevice.getAddress()) > devicesRssi.get(activeDevice)) {
-                    scrollView.setBackgroundColor(devicesColors.get(bluetoothDevice.getAddress()));
-                    activeDevice = bluetoothDevice.getAddress();
-
-                    for (String address : devicesRssi.keySet()) {
-                        writeLine("Address: " + address + " | RSSI: "+ devicesRssi.get(address));
-                    }
-                }
+            if (mActiveDevice != null && rssi - mDevicesList.get(mActiveDevice) > 20){
+                mActiveDevice = bluetoothDevice;
+                //updateView(bluetoothDevice.getTitle());
+                updateView("Requesting data", null);
+                controller.requestMasterpieceInfo(bluetoothDevice.getName().toLowerCase(), mCurrentLanguage);
+            } else if (mActiveDevice != null && bluetoothDevice.getAddress().equals(mActiveDevice.getAddress()) && rssi < MIN_RSSI){
+                mActiveDevice = null;
+                updateView(":(", null);
+                mDescriptionTextView.setVisibility(GONE);
             }
+
+
         }
     };
 
-    private void writeLine(final CharSequence text) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                messages.append(text);
-                messages.append("\n");
-            }
-        });
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("Test", "Scanning for devices...");
+        mAdapter.startLeScan(scanCallback);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mAdapter.stopLeScan(scanCallback);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        mLanguageMenuItem = menu.findItem(R.id.languageMenu);
+        updateMenuTitle(mCurrentLanguage);
+        return true;
+    }
+
+    @Override
+    public void OnResponseReceived(Masterpiece mp, boolean error) {
+        if(!error){
+            updateView(mp.getTitle(), mp.getContent());
+            Log.d("Response", mp.getTitle() + ": " + mp.getContent());
+        } else { // Unsuccessful response
+            updateView(":/", null);
+            mDescriptionTextView.setVisibility(View.GONE);
+            Log.d("Response", "Error");
+        }
     }
 
     @Override
@@ -109,10 +120,45 @@ public class MainActivity extends Activity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
+        if (id == R.id.languageMenu) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle("Select your language: ");
+
+            final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+                    MainActivity.this,
+                    android.R.layout.select_dialog_singlechoice);
+            arrayAdapter.add("pt-br");
+            arrayAdapter.add("en-us");
+
+            builder.setNegativeButton("Cancel", null);
+
+            builder.setAdapter(
+                    arrayAdapter,
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            mCurrentLanguage = arrayAdapter.getItem(which);
+                            updateView("Requesting data", null);
+                            controller.requestMasterpieceInfo(mActiveDevice.getName().toLowerCase(), mCurrentLanguage);
+                            updateMenuTitle(mCurrentLanguage);
+                            mDescriptionTextView.setVisibility(GONE);
+                        }
+                    });
+            builder.show();
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
+    private void updateView(String title, String content){
+        mTitleTextView.setText(title);
+        if(content != null) {
+            mDescriptionTextView.setText(content);
+            mDescriptionTextView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void updateMenuTitle(String language) {
+        mLanguageMenuItem.setTitle(language);
+    }
 }
