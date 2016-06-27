@@ -22,7 +22,6 @@ import edu.iit.bluetoothbeacon.models.Masterpiece;
 import static android.view.View.GONE;
 
 public class MainActivity extends AppCompatActivity implements OnResponseReceivedListener {
-
     private final static int MIN_RSSI = -70;
     private final static int NEARBY_RSSI = -55;
 
@@ -41,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         mAdapter = BluetoothAdapter.getDefaultAdapter();
