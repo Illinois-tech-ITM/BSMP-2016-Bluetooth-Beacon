@@ -138,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             mCurrentLanguage = arrayAdapter.getItem(which);
+                            controller.requestMasterpieceInfo(mActiveDevice.getName().toLowerCase(), mCurrentLanguage);
                             updateMenuTitle(mCurrentLanguage);
                         }
                     });
