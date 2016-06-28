@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -24,6 +25,7 @@ import static android.view.View.GONE;
 public class MainActivity extends AppCompatActivity implements OnResponseReceivedListener {
     private final static int MIN_RSSI = -70;
     private final static int NEARBY_RSSI = -55;
+    private static final int REQUEST_ENABLE_BT = 1;
 
     private Controller controller;
 
@@ -44,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
         setContentView(R.layout.activity_main);
 
         mAdapter = BluetoothAdapter.getDefaultAdapter();
+
         mDevicesList = new HashMap<>();
         mTitleTextView = (TextView) findViewById(R.id.titleTextView);
         mDescriptionTextView = (TextView) findViewById(R.id.descTextView);
@@ -83,6 +86,11 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
     @Override
     protected void onResume() {
         super.onResume();
+        Log.d("TEST", mAdapter.isEnabled() + "");
+        if (!mAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
         Log.d("Test", "Scanning for devices...");
         mAdapter.startLeScan(scanCallback);
     }
