@@ -51,8 +51,7 @@ public class Controller {
     public void requestMasterpieceInfo(String id){
         final String dvcName = id;
 
-        String url = this.URL + "?dvcName=" + dvcName;
-
+        String url = this.URL + "?dvcKey=" + dvcName;
         final JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -66,7 +65,7 @@ public class Controller {
                                 JSONObject translationJson = translations.getJSONObject(i);
                                 translationsMap.put(translationJson.getString("language"), new Translation(translationJson.getString("title"), translationJson.getString("content")));
                             }
-                            mp = new Masterpiece(response.getString("dvcName"), translationsMap);
+                            mp = new Masterpiece(response.getString("dvcKey"), translationsMap);
                         } catch (Exception e){
                             // Parsing error
                             if(onResponseReceivedListener != null) {

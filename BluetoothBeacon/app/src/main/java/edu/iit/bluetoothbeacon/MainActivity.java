@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
         @Override
         public void onLeScan(BluetoothDevice bluetoothDevice, int rssi, byte[] bytes) {
             if (bluetoothDevice.getName() == null || !bluetoothDevice.getName().matches("DVC\\d\\d\\d\\d")) return;
-            Log.d("Test", "Address: " + bluetoothDevice + " | RSSI: "+ rssi);
+//            Log.d("Test", "Address: " + bluetoothDevice + " | RSSI: "+ rssi);
             mDevicesList.put(bluetoothDevice, rssi);
             if (mActiveDevice == null && rssi > NEARBY_RSSI){
                 mActiveDevice = bluetoothDevice;
