@@ -19,6 +19,7 @@ import android.widget.TextView;
 import java.util.HashMap;
 
 import edu.iit.bluetoothbeacon.models.Masterpiece;
+import edu.iit.bluetoothbeacon.models.Translation;
 
 import static android.view.View.GONE;
 
@@ -38,6 +39,8 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
 
     private String mCurrentLanguage = "pt-br";
     private MenuItem mLanguageMenuItem;
+
+    private Masterpiece mMasterPiece;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,18 +67,18 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
             if (mActiveDevice == null && rssi > NEARBY_RSSI){
                 mActiveDevice = bluetoothDevice;
                 updateView("Requesting data", null);
-                controller.requestMasterpieceInfo(bluetoothDevice.getName().toLowerCase(), mCurrentLanguage);
+                controller.requestMasterpieceInfo(bluetoothDevice.getName().toLowerCase());
                 return;
             }
 
             if (mActiveDevice != null && rssi - mDevicesList.get(mActiveDevice) > 20){
                 mActiveDevice = bluetoothDevice;
-                //updateView(bluetoothDevice.getTitle());
                 updateView("Requesting data", null);
-                controller.requestMasterpieceInfo(bluetoothDevice.getName().toLowerCase(), mCurrentLanguage);
+                controller.requestMasterpieceInfo(bluetoothDevice.getName().toLowerCase());
             } else if (mActiveDevice != null && bluetoothDevice.getAddress().equals(mActiveDevice.getAddress()) && rssi < MIN_RSSI){
                 mActiveDevice = null;
                 updateView(":(", null);
+                mMasterPiece = null;
                 mDescriptionTextView.setVisibility(GONE);
             }
 
@@ -90,9 +93,20 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
         if (!mAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        } else {
+            Log.d("Test", "Scanning for devices...");
+            mAdapter.startLeScan(scanCallback);
         }
-        Log.d("Test", "Scanning for devices...");
-        mAdapter.startLeScan(scanCallback);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_ENABLE_BT) {
+            if (resultCode == RESULT_OK) {
+                Log.d("Test", "Scanning for devices...");
+                mAdapter.startLeScan(scanCallback);
+            }
+        }
     }
 
     @Override
@@ -113,8 +127,10 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
     @Override
     public void OnResponseReceived(Masterpiece mp, boolean error) {
         if(!error){
-            updateView(mp.getTitle(), mp.getContent());
-            Log.d("Response", mp.getTitle() + ": " + mp.getContent());
+            mMasterPiece = mp;
+            Translation t = mMasterPiece.getOneTranslation(mCurrentLanguage);
+            updateView(t.getTitle(), t.getContent());
+            Log.d("Response", mp.getDvcName());
         } else { // Unsuccessful response
             updateView(":/", null);
             mDescriptionTextView.setVisibility(View.GONE);
@@ -146,10 +162,9 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             mCurrentLanguage = arrayAdapter.getItem(which);
-                            updateView("Requesting data", null);
-                            controller.requestMasterpieceInfo(mActiveDevice.getName().toLowerCase(), mCurrentLanguage);
+                            Translation t = mMasterPiece.getOneTranslation(mCurrentLanguage);
+                            updateView(t.getTitle(), t.getContent());
                             updateMenuTitle(mCurrentLanguage);
-                            mDescriptionTextView.setVisibility(GONE);
                         }
                     });
             builder.show();

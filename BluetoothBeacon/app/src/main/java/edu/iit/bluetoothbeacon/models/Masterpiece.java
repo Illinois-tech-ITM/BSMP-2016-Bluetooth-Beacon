@@ -1,32 +1,26 @@
 package edu.iit.bluetoothbeacon.models;
 
-/**
- * Created by anderson on 6/25/16.
- */
+import java.util.HashMap;
 
 public class Masterpiece {
 
-    private String title;
-    private String content;
+    private String dvcName;
+    private HashMap<String, Translation> translations;
 
-    public Masterpiece(String title, String content){
-        this.title = title;
-        this.content = content;
+    public Masterpiece(String dvcName, HashMap<String, Translation> translations){
+        this.dvcName = dvcName;
+        this.translations = translations;
     }
 
-    public String getTitle() {
-        return title;
+    public String getDvcName() {
+        return dvcName;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public HashMap<String, Translation> getTranslations() {
+        return translations;
     }
 
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
+    public Translation getOneTranslation(String languageCode){
+        return translations.get(languageCode);
     }
 }

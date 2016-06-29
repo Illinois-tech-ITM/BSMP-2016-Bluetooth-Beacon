@@ -1,6 +1,7 @@
 package edu.iit.bluetoothbeacon;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -9,18 +10,18 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
-import edu.iit.bluetoothbeacon.models.Masterpiece;
+import java.util.HashMap;
 
-/**
- * Created by anderson on 6/25/16.
- */
+import edu.iit.bluetoothbeacon.models.Masterpiece;
+import edu.iit.bluetoothbeacon.models.Translation;
 
 public class Controller {
 
     // Server address *CHANGE THIS WHILE IT'S NOT ON THE CLOUD*
-    private final String URL = "http://104.194.118.254:8080/getArtwork";
+    private final String URL = "https://floating-journey-50760.herokuapp.com/getArtwork";
 
     private static OnResponseReceivedListener onResponseReceivedListener;
 
@@ -47,20 +48,25 @@ public class Controller {
         return Instance;
     }
 
-    public void requestMasterpieceInfo(String id, String language){
+    public void requestMasterpieceInfo(String id){
         final String dvcName = id;
-        final String lang = language;
 
-        String url = this.URL + "?dvcName=" + dvcName + "&language=" + lang;
+        String url = this.URL + "?dvcName=" + dvcName;
 
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
+        final JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
                         Masterpiece mp = null;
                         try {
                             // JSON to Masterpiece
-                            mp = new Masterpiece((String) response.get("title"), (String) response.get("content"));
+                            JSONArray translations = response.getJSONArray("translations");
+                            HashMap<String, Translation> translationsMap = new HashMap<>();
+                            for (int i=0;i<translations.length();i++){
+                                JSONObject translationJson = translations.getJSONObject(i);
+                                translationsMap.put(translationJson.getString("language"), new Translation(translationJson.getString("title"), translationJson.getString("content")));
+                            }
+                            mp = new Masterpiece(response.getString("dvcName"), translationsMap);
                         } catch (Exception e){
                             // Parsing error
                             if(onResponseReceivedListener != null) {
