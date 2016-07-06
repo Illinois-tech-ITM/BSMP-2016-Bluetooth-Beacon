@@ -52,6 +52,7 @@ public class Controller {
         final String dvcName = id;
 
         String url = this.URL + "?dvcKey=" + dvcName;
+        Log.d("Test", url);
         final JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONObject>() {
                     @Override

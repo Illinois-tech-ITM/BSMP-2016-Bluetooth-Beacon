@@ -43,7 +43,10 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
         mDevicesList = new HashMap<>();
         mCurrentLanguage = "pt-br";
         controller = Controller.getInstance(this, this);
-        switchToFragment(new WelcomeFragment().newInstance());
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.add(R.id.fragment_container, new WelcomeFragment().newInstance());
+        fragmentTransaction.commit();
     }
 
     private LeScanCallback scanCallback = new LeScanCallback() {
@@ -111,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
     private void switchToFragment(Fragment f){
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.fragment_container, f);
+        fragmentTransaction.replace(R.id.fragment_container, f);
         fragmentTransaction.commit();
     }
 

@@ -62,7 +62,6 @@ public class MasterpieceFragment extends Fragment {
             mMasterpiece = getArguments().getParcelable(MASTERPIECE);
             mCurrentLanguage = getArguments().getString(LANGUAGE);
         }
-        updateMenuTitle(mCurrentLanguage);
         setHasOptionsMenu(true);
     }
 
@@ -76,6 +75,7 @@ public class MasterpieceFragment extends Fragment {
         Translation t = mMasterpiece.getOneTranslation(mCurrentLanguage);
         mTitleTextView.setText(t.getTitle());
         mDescriptionTextView.setText(t.getContent());
+        updateMenuTitle(mCurrentLanguage);
         return v;
     }
 
