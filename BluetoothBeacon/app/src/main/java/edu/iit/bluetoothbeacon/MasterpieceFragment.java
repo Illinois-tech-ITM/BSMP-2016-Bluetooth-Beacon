@@ -75,7 +75,7 @@ public class MasterpieceFragment extends Fragment {
         Translation t = mMasterpiece.getOneTranslation(mCurrentLanguage);
         mTitleTextView.setText(t.getTitle());
         mDescriptionTextView.setText(t.getContent());
-        updateMenuTitle(mCurrentLanguage);
+        //updateMenuTitle(mCurrentLanguage);
         return v;
     }
 

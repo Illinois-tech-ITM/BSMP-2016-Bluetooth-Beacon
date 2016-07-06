@@ -43,10 +43,7 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
         mDevicesList = new HashMap<>();
         mCurrentLanguage = "pt-br";
         controller = Controller.getInstance(this, this);
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.fragment_container, new WelcomeFragment().newInstance());
-        fragmentTransaction.commit();
+        switchToFragment(new WelcomeFragment().newInstance(), true);
     }
 
     private LeScanCallback scanCallback = new LeScanCallback() {
@@ -66,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
                 controller.requestMasterpieceInfo(bluetoothDevice.getName().toLowerCase());
             } else if (mActiveDevice != null && bluetoothDevice.getAddress().equals(mActiveDevice.getAddress()) && rssi < MIN_RSSI){
                 mActiveDevice = null;
-                switchToFragment(new WelcomeFragment().newInstance());
+                switchToFragment(new WelcomeFragment().newInstance(), false);
             }
         }
     };
@@ -100,10 +97,33 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
         mAdapter.stopLeScan(scanCallback);
     }
 
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        MenuInflater inflater = getMenuInflater();
+//        inflater.inflate(R.menu.menu_main, menu);
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        // Handle item selection
+//        switch (item.getItemId()) {
+//            case R.id.aboutMenu:
+//                about();
+//                return true;
+//            default:
+//                return super.onOptionsItemSelected(item);
+//        }
+//    }
+//
+//    private void about() {
+//        //switchToFragment(new AboutFragment().newInstance(), true);
+//    }
+
     @Override
     public void OnResponseReceived(Masterpiece mp, boolean error) {
         if(!error){
-            switchToFragment(new MasterpieceFragment().newInstance(mp, mCurrentLanguage));
+            switchToFragment(new MasterpieceFragment().newInstance(mp, mCurrentLanguage), false);
             Log.d("Response", mp.getDvcName());
         } else { // Unsuccessful response
 //            switchToFragment(new ErrorFragment().newInstance());
@@ -111,10 +131,14 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
         }
     }
 
-    private void switchToFragment(Fragment f){
+    private void switchToFragment(Fragment f, boolean add){
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, f);
+        if (add){
+            fragmentTransaction.add(R.id.fragment_container, f);
+        } else {
+            fragmentTransaction.replace(R.id.fragment_container, f);
+        }
         fragmentTransaction.commit();
     }
 
