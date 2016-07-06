@@ -5,4 +5,5 @@ local.properties
 .idea/libraries
 .DS_Store
 build/
+!app/build/outputs/apk
 captures/
