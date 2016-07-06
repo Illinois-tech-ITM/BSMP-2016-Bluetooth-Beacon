@@ -1,5 +1,8 @@
 package edu.iit.bluetoothbeacon;
 
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
 import android.bluetooth.BluetoothDevice;
@@ -14,16 +17,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.TextView;
 
 import java.util.HashMap;
 
 import edu.iit.bluetoothbeacon.models.Masterpiece;
 import edu.iit.bluetoothbeacon.models.Translation;
 
-import static android.view.View.GONE;
-
-public class MainActivity extends AppCompatActivity implements OnResponseReceivedListener {
+public class MainActivity extends AppCompatActivity implements OnResponseReceivedListener, MasterpieceFragment.OnLanguageSelectedListener {
     private final static int MIN_RSSI = -70;
     private final static int NEARBY_RSSI = -55;
     private static final int REQUEST_ENABLE_BT = 1;
@@ -33,29 +33,17 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
     private BluetoothAdapter mAdapter;
     private BluetoothDevice mActiveDevice;
     private HashMap<BluetoothDevice, Integer> mDevicesList; //key: Beacon | value: RSSI (sinal strength)
-
-    private TextView mTitleTextView;
-    private TextView mDescriptionTextView;
-
-    private String mCurrentLanguage = "pt-br";
-    private MenuItem mLanguageMenuItem;
-
-    private Masterpiece mMasterPiece;
+    private String mCurrentLanguage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
-
         mAdapter = BluetoothAdapter.getDefaultAdapter();
-
         mDevicesList = new HashMap<>();
-        mTitleTextView = (TextView) findViewById(R.id.titleTextView);
-        mDescriptionTextView = (TextView) findViewById(R.id.descTextView);
-        mDescriptionTextView.setVisibility(GONE);
-
+        mCurrentLanguage = "pt-br";
         controller = Controller.getInstance(this, this);
+        switchToFragment(new WelcomeFragment().newInstance());
     }
 
     private LeScanCallback scanCallback = new LeScanCallback() {
@@ -66,23 +54,17 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
             mDevicesList.put(bluetoothDevice, rssi);
             if (mActiveDevice == null && rssi > NEARBY_RSSI){
                 mActiveDevice = bluetoothDevice;
-                updateView("Requesting data", null);
                 controller.requestMasterpieceInfo(bluetoothDevice.getName().toLowerCase());
                 return;
             }
 
             if (mActiveDevice != null && rssi - mDevicesList.get(mActiveDevice) > 20){
                 mActiveDevice = bluetoothDevice;
-                updateView("Requesting data", null);
                 controller.requestMasterpieceInfo(bluetoothDevice.getName().toLowerCase());
             } else if (mActiveDevice != null && bluetoothDevice.getAddress().equals(mActiveDevice.getAddress()) && rssi < MIN_RSSI){
                 mActiveDevice = null;
-                updateView(":(", null);
-                mMasterPiece = null;
-                mDescriptionTextView.setVisibility(GONE);
+                switchToFragment(new WelcomeFragment().newInstance());
             }
-
-
         }
     };
 
@@ -116,72 +98,25 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_main, menu);
-        mLanguageMenuItem = menu.findItem(R.id.languageMenu);
-        updateMenuTitle(mCurrentLanguage);
-        return true;
-    }
-
-    @Override
     public void OnResponseReceived(Masterpiece mp, boolean error) {
         if(!error){
-            mMasterPiece = mp;
-            Translation t = mMasterPiece.getOneTranslation(mCurrentLanguage);
-            updateView(t.getTitle(), t.getContent());
+            switchToFragment(new MasterpieceFragment().newInstance(mp, mCurrentLanguage));
             Log.d("Response", mp.getDvcName());
         } else { // Unsuccessful response
-            updateView(":/", null);
-            mDescriptionTextView.setVisibility(View.GONE);
+//            switchToFragment(new ErrorFragment().newInstance());
             Log.d("Response", "Error");
         }
     }
 
+    private void switchToFragment(Fragment f){
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.add(R.id.fragment_container, f);
+        fragmentTransaction.commit();
+    }
+
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.languageMenu) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-            builder.setTitle("Select your language: ");
-
-            final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
-                    MainActivity.this,
-                    android.R.layout.select_dialog_singlechoice);
-            arrayAdapter.add("pt-br");
-            arrayAdapter.add("en-us");
-
-            builder.setNegativeButton("Cancel", null);
-
-            builder.setAdapter(
-                    arrayAdapter,
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            mCurrentLanguage = arrayAdapter.getItem(which);
-                            Translation t = mMasterPiece.getOneTranslation(mCurrentLanguage);
-                            updateView(t.getTitle(), t.getContent());
-                            updateMenuTitle(mCurrentLanguage);
-                        }
-                    });
-            builder.show();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void updateView(String title, String content){
-        mTitleTextView.setText(title);
-        if(content != null) {
-            mDescriptionTextView.setText(content);
-            mDescriptionTextView.setVisibility(View.VISIBLE);
-        }
-    }
-
-    private void updateMenuTitle(String language) {
-        mLanguageMenuItem.setTitle(language);
+    public void onLanguageSelected(String language) {
+        mCurrentLanguage = language;
     }
 }

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:src="@drawable/starry_night"
+            android:layout_width="290dp"
+            android:layout_height="250dp"
+            android:id="@+id/masterpieceImageView"
+            android:layout_gravity="center"
+            android:padding="2dp"
+            android:layout_above="@+id/textView4"
+            android:layout_centerHorizontal="true" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:id="@+id/titleTextView"
+            android:layout_below="@+id/masterpieceImageView"
+            android:layout_alignLeft="@+id/masterpieceImageView"
+            android:layout_alignStart="@+id/masterpieceImageView"
+            android:text="The Starry Night" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="by Vincent Van Gogh"
+            android:id="@+id/authorTextView"
+            android:layout_below="@+id/titleTextView"
+            android:layout_alignLeft="@+id/titleTextView"
+            android:layout_alignStart="@+id/titleTextView" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Painted in June 1889, it depicts the view from the east-facing window of his asylum room at Saint-Rémy-de-Provence, just before sunrise, with the addition of an idealized village."
+            android:id="@+id/descriptionTextView"
+            android:layout_below="@+id/authorTextView"
+            android:layout_marginTop="41dp"
+            android:layout_alignLeft="@+id/authorTextView"
+            android:layout_alignStart="@+id/authorTextView"
+            android:layout_alignRight="@+id/masterpieceImageView"
+            android:layout_alignEnd="@+id/masterpieceImageView" />
+
+    </RelativeLayout>
+
+</LinearLayout>

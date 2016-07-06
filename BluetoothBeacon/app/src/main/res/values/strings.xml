@@ -3,4 +3,8 @@
     <string name="titleTextView">Scanning...</string>
     <string name="loremIpsumDesc"> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse porta suscipit ante sit amet mollis. Donec et posuere sem, sit amet fermentum ligula. Aenean faucibus congue aliquet. Nullam hendrerit sollicitudin blandit. Donec ultricies sem mi, vel sodales quam mollis id. Aliquam quis odio nisi. Curabitur scelerisque, est et sollicitudin blandit, felis ipsum fringilla libero, eget suscipit velit arcu vel est. Sed non orci vitae augue egestas accumsan. Proin facilisis, quam non convallis ultricies, lectus purus placerat nisl, sit amet tincidunt dui eros et nisi. Quisque nec est erat. Sed gravida sapien velit, eget facilisis velit vulputate sed. Quisque pretium massa eleifend nisi congue vehicula sit amet ut dui. </string>
     <string name="languageMenu">Language</string>
+    <string name="aboutMenu">About</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
