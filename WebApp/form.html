@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html ng-app="bluemap">
+  <head>
+    <meta charset="UTF-8">
+    <title>BlueMap - Device Registration Form</title>
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/formStyle.css" type="text/css">
+  </head>
+  <body ng-controller="mainCtrl">
+  	<!-- View for registered devices -->
+  	<div class="form-group col-md-4 img-rounded">
+  		<div class="list-group">
+    		<a class="list-group-item disabled title">Registered Devices</a>
+    		<a href="" ng-repeat="device in devices" class="list-group-item" ng-click="onDeviceClick(device)">
+    			<div>{{device.key}}</div>
+    			<div>{{device.name}}</div>
+    		</a>
+    		<a href="" class="list-group-item" ng-click="addNewDevice()">Add new device...</a>
+  		</div>
+	</div>
+	<!-- Single device view -->
+	<div class="form-group col-md-4 img-rounded" ng-show="selectedDevice">
+  		<div class="list-group">
+    		<span class="list-group-item">
+    			<h5><b>Device Key:</b> {{selectedDevice.key}}</h5>
+    			<h5><b>Device Name:</b> {{selectedDevice.name}}</h5>
+    			<h5><b>Translations</b></h5>
+    			<a class="list-group-item img-rounded" ng-repeat="translation in selectedDevice.translations"> {{translation.code}} </a>
+    		</span>
+  		</div>
+  		<button ng-click="addNewTranslation(selectedDevice)" class="btn btn-primary">Add Translation</button>
+	</div>
+	<!-- View for registering a new device -->
+	<form class="form-group col-md-4" ng-show="!selectedDevice">
+	<fieldset>
+	<legend>Add new device</legend>
+	<div class="form-group">
+	  <label class="control-label" for="">Device Key</label>
+	  <div>
+	  <input ng-model="newDevice.key" id="" name="" type="text" placeholder="DVCXXXX" class="form-control input-md">
+	  </div>
+	</div>
+	<div class="form-group">
+	  <label class="control-label" for="">Device Name</label>  
+	  <div >
+	  <input ng-model="newDevice.name" id="" name="" type="text" placeholder="Mona Lisa" class="form-control input-md">
+	  </div>
+	</div>
+	<div class="form-group">
+		<h5><b>Translations</b></h5>
+		<a class="list-group-item" ng-repeat="translation in newDevice.translations"> {{translation.code}} </a>
+		<a href="" class="list-group-item img-rounded" ng-click="addNewTranslation()">Add new translation...</a>
+	</div>
+	<div class="form-group">
+	  <div>
+	  	<button ng-click="newDevice = null" class="btn btn-warning">Reset Form</button>
+	    <button ng-click="saveNewDevice(newDevice)" class="btn btn-primary">Submit</button>
+	  </div>
+	</div>
+	</fieldset>
+	</form>
+	<!-- View for adding a new translation -->
+	<form class="form-horizontal col-md-4" ng-show="addingTranslation">
+	<fieldset>
+	<legend>Add new translation</legend>
+	<div class="form-group">
+	  <label class="control-label" for="">Language Code</label>
+	  <div>
+	  <input ng-model="translation.code" id="" name="" type="text" placeholder="Eg: 'pt-br', 'en-us', etc." class="form-control input-md">
+	  </div>
+	</div>
+	<div class="form-group">
+	  <label class="control-label" for="">Title</label>  
+	  <div>
+	  <input ng-model="translation.title" id="" name="" type="text" placeholder="Mona Lisa" class="form-control input-md">
+	  </div>
+	</div>
+	<div class="form-group">
+	  <label class="control-label" for="">Description</label>  
+	  <div>
+	  <input ng-model="translation.description" id="" name="" type="text" placeholder="Mona Lisa" class="form-control input-md">
+	  </div>
+	</div>
+	<div class="form-group">
+	  <div>
+	  	<button ng-click="translation = null" class="btn btn-warning">Reset Form</button>
+	    <button ng-click="saveNewTranslation(translation)" class="btn btn-info">Done</button>
+	  </div>
+	</div>
+	</fieldset>
+	</form>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular.min.js" type="text/javascript"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+  <script src="js/controller.js" type="text/javascript"></script>
+  </body>
+</html>
