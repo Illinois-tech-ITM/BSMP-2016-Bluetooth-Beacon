@@ -1,3 +1,0 @@
-[submodule "bluetooth-server"]
-	path = bluetooth-server
-	url = git@github.com:gcrsaldanha/bluetooth-server.git
