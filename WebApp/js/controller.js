@@ -3,7 +3,8 @@ var app = angular.module('bluemap', ['ngRoute']);
 app.config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider){
 	$routeProvider.
 		when('/', {
-			templateUrl: 'views/login.html'
+			templateUrl: 'views/login.html',
+			controller: 'loginCtrl'
 		}).
 		when('/form', {
 			templateUrl: 'views/form.html'
