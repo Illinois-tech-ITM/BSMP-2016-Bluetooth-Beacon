@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Bluetooth Beacon Registration</title>
+    
+    
+    <link rel="stylesheet" href="css/reset.css">
+
+    <link rel='stylesheet prefetch' href='https://fonts.googleapis.com/css?family=Roboto:400,100,300,500,700,900|RobotoDraft:400,100,300,500,700,900'>
+<link rel='stylesheet prefetch' href='https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css'>
+
+        <link rel="stylesheet" href="css/style.css">
+
+    
+    
+    
+  </head>
+
+  <body ng-controller="loginCtrl">
+
+    
+<!-- Form Mixin-->
+<!-- Input Mixin-->
+<!-- Button Mixin-->
+<!-- Pen Title-->
+<div class="pen-title">
+  <h1>Bluetooth Museum</h1><span> 
+  <img src="images/bluetooth.png" width="20" height="40"> Thales Sousa and Rafael Ghossi</span>
+</div>
+<!-- Form Module-->
+<div class="module form-module">
+  <div class="toggle"><i class="fa fa-times fa-pencil"></i>
+    <div class="tooltip">Register an Account</div>
+  </div>
+  <div class="form">
+    <h2>Login to your account</h2>
+    <div>
+      <input ng-model="username" type="text" placeholder="Username"/>
+      <input type="password" placeholder="Password"/>
+      <button ng-click="login(username)">Login</button>
+    </div>
+  </div>
+  <div class="form">
+    <h2>Create an account</h2>
+    <form>
+      <input type="text" placeholder="Username"/>
+      <input type="password" placeholder="Password"/>
+      <input type="email" placeholder="Email Address"/>
+      <input type="tel" placeholder="Phone Number"/>
+      <button>Register</button>
+    </form>
+  </div>
+  <div class="cta"><a href="some website" >Forgot your password?</a></div>
+</div>
+        <script src="js/index.js"></script>
+  </body>
+</html>

@@ -1,7 +1,46 @@
-var app = angular.module('bluemap', []);
+var app = angular.module('bluemap', ['ngRoute']);
 
-app.controller('navbarCtrl', function($scope){
+app.config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider){
+	$routeProvider.
+		when('/', {
+			templateUrl: 'views/login.html'
+		}).
+		when('/form', {
+			templateUrl: 'views/form.html'
+		}).
+		otherwise({
+			redirectTo: '/'
+		});
+		$locationProvider.html5Mode(true);
+}]);
 
+app.service('sessionInfo', function(){
+    var session = null;
+    return {
+        getSession: function() {
+            return session;
+        },
+        setSession: function(s){
+            session = s;
+        }
+    }
+});
+
+app.controller('loginCtrl', function($scope, $location, sessionInfo){
+	$scope.login = function(username){
+		console.log("bla");
+		sessionInfo.setSession(username);
+		$location.path("form");
+	}
+});
+
+app.controller('navbarCtrl', function($scope, $location, sessionInfo){
+	$scope.session = {};
+	$scope.session.name = sessionInfo.getSession();
+
+	$scope.logout = function(){
+		$location.path("index");
+	};
 });
 
 app.controller('mainCtrl', function($scope, $http){
