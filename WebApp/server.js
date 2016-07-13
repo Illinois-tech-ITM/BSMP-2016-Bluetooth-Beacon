@@ -9,10 +9,10 @@ var port = process.env.PORT || 8080;
 app.use(express.static(__dirname + '/'));
 
 // set the home page route
-app.get('/', function(req, res) {
+app.get('/views', function(req, res) {
 
     // make sure index is in the right directory. In this case /app/index.html
-    res.render('login');
+    res.render('index');
 });
 
 app.listen(port, function() {
