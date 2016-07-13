@@ -12,7 +12,7 @@ app.use(express.static(__dirname + '/'));
 app.get('/', function(req, res) {
 
     // make sure index is in the right directory. In this case /app/index.html
-    res.render('index');
+    res.render('login');
 });
 
 app.listen(port, function() {

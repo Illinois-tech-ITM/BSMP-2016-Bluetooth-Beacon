@@ -1,5 +1,9 @@
 var app = angular.module('bluemap', []);
 
+app.controller('navbarCtrl', function($scope){
+
+});
+
 app.controller('mainCtrl', function($scope, $http){
 	$scope.addingTranslation = false;
 	$scope.selectedDevice = null;
