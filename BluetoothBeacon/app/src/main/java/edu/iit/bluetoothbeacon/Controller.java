@@ -66,7 +66,7 @@ public class Controller {
                                 JSONObject translationJson = translations.getJSONObject(i);
                                 translationsMap.put(translationJson.getString("language"), new Translation(translationJson.getString("title"), translationJson.getString("content")));
                             }
-                            mp = new Masterpiece(response.getString("dvcKey"), translationsMap);
+                            mp = new Masterpiece(response.getString("dvcKey"), response.getString("imageURL"), translationsMap);
                         } catch (Exception e){
                             // Parsing error
                             if(onResponseReceivedListener != null) {

@@ -8,7 +8,7 @@
         android:layout_height="match_parent">
 
         <ImageView
-            android:src="@drawable/starry_night"
+            android:src="@drawable/loading"
             android:layout_width="290dp"
             android:layout_height="250dp"
             android:id="@+id/masterpieceImageView"

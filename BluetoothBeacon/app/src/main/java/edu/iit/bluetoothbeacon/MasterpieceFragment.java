@@ -4,6 +4,8 @@ package edu.iit.bluetoothbeacon;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
@@ -13,7 +15,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageRequest;
+import com.android.volley.toolbox.Volley;
+
+import java.net.URL;
 
 import edu.iit.bluetoothbeacon.models.Masterpiece;
 import edu.iit.bluetoothbeacon.models.Translation;
@@ -26,6 +37,7 @@ public class MasterpieceFragment extends Fragment {
     private String mCurrentLanguage = "pt-br";
     private TextView mTitleTextView;
     private TextView mDescriptionTextView;
+    private ImageView mImageView;
 
 
     public MasterpieceFragment() {
@@ -72,9 +84,24 @@ public class MasterpieceFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_masterpiece, container, false);
         mTitleTextView = (TextView) v.findViewById(R.id.titleTextView);
         mDescriptionTextView = (TextView) v.findViewById(R.id.descriptionTextView);
+        mImageView = (ImageView) v.findViewById(R.id.masterpieceImageView);
         Translation t = mMasterpiece.getOneTranslation(mCurrentLanguage);
         mTitleTextView.setText(t.getTitle());
         mDescriptionTextView.setText(t.getContent());
+        RequestQueue queue = Volley.newRequestQueue(getActivity());
+        ImageRequest request = new ImageRequest(mMasterpiece.getImageUrl(),
+                new Response.Listener<Bitmap>() {
+                    @Override
+                    public void onResponse(Bitmap bitmap) {
+                        mImageView.setImageBitmap(bitmap);
+                    }
+                }, 0, 0, null,
+                new Response.ErrorListener() {
+                    public void onErrorResponse(VolleyError error) {
+                        mImageView.setImageResource(android.R.drawable.stat_notify_error);
+                    }
+                });
+        queue.add(request);
         //updateMenuTitle(mCurrentLanguage);
         return v;
     }

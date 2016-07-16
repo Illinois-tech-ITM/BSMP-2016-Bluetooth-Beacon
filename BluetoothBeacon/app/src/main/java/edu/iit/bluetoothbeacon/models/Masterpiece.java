@@ -8,10 +8,12 @@ import java.util.HashMap;
 public class Masterpiece implements Parcelable {
 
     private String dvcName;
+    private String imageUrl;
     private HashMap<String, Translation> translations;
 
-    public Masterpiece(String dvcName, HashMap<String, Translation> translations){
+    public Masterpiece(String dvcName, String imageUrl, HashMap<String, Translation> translations){
         this.dvcName = dvcName;
+        this.imageUrl = imageUrl;
         this.translations = translations;
     }
 
@@ -33,6 +35,10 @@ public class Masterpiece implements Parcelable {
 
     public String getDvcName() {
         return dvcName;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
     }
 
     public HashMap<String, Translation> getTranslations() {
