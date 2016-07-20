@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="css/formStyle.css" type="text/css">
   </head>
   <body>
+  	
   	<!-- Navigation bar -->
   	<nav ng-controller="navbarCtrl" class="navbar navbar-inverse">
 	  <div class="container-fluid">
@@ -20,6 +21,7 @@
 	  </div>
 	</nav>
 	<div ng-controller="mainCtrl">
+		
   	<!-- View for registered devices -->
   	<div class="form-group col-md-4 img-rounded">
   		<div class="list-group">
@@ -31,18 +33,22 @@
     		<a href="" class="list-group-item" ng-click="addNewDevice()">Add new device...</a>
   		</div>
 	</div>
+	
 	<!-- Single device view -->
-	<div class="form-group col-md-4 img-rounded" ng-show="selectedDevice">
+	<div class="form-group col-md-4 img-rounded" ng-show="selectedDevice && !editingDevice">
   		<div class="list-group">
     		<span class="list-group-item">
     			<h5><b>Device Key:</b> {{selectedDevice.dvcKey}}</h5>
     			<h5><b>Device Name:</b> {{selectedDevice.dvcName}}</h5>
+    			<h5><b>Image URL:</b> {{selectedDevice.imageURL}}</h5>
+    			<h5><b>Preview:</b> <img ng-show="selectedDevice.imageURL" ng-src="{{selectedDevice.imageURL}}"></h5>
     			<h5><b>Translations</b></h5>
     			<a class="list-group-item img-rounded" href="" ng-repeat="translation in selectedDevice.translations" ng-click="onTranslationClick(translation)"> {{translation.language}} </a>
     		</span>
   		</div>
   		<button ng-click="addNewTranslation(selectedDevice)" class="btn btn-primary">Add Translation</button>
 	</div>
+	
 	<!-- View for registering a new device -->
 	<form class="form-group col-md-4" ng-show="!selectedDevice">
 	<fieldset>
@@ -72,6 +78,7 @@
 	</div>
 	</fieldset>
 	</form>
+	
 	<!-- View for adding a new translation -->
 	<form class="form-horizontal col-md-4" ng-show="addingTranslation">
 	<fieldset>

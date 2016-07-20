@@ -94,6 +94,7 @@ app.controller('navbarCtrl', function($scope, $location, sessionInfo){
 app.controller('mainCtrl', function($scope, $http, sessionInfo){
 	$scope.addingTranslation = false;
 	$scope.editingTranslation = false;
+	$scope.editingDevice = false;
 	$scope.selectedDevice = null;
 	$scope.newDevice = {};
 	$scope.newDevice.translations = [];
