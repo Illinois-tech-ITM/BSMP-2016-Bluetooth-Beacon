@@ -38,7 +38,7 @@
     			<h5><b>Device Key:</b> {{selectedDevice.dvcKey}}</h5>
     			<h5><b>Device Name:</b> {{selectedDevice.dvcName}}</h5>
     			<h5><b>Translations</b></h5>
-    			<a class="list-group-item img-rounded" ng-repeat="translation in selectedDevice.translations"> {{translation.language}} </a>
+    			<a class="list-group-item img-rounded" href="" ng-repeat="translation in selectedDevice.translations" ng-click="onTranslationClick(translation)"> {{translation.language}} </a>
     		</span>
   		</div>
   		<button ng-click="addNewTranslation(selectedDevice)" class="btn btn-primary">Add Translation</button>
@@ -79,7 +79,7 @@
 	<div class="form-group">
 	  <label class="control-label" for="">Language Code</label>
 	  <div>
-	  <input ng-model="translation.code" id="" name="" type="text" placeholder="Eg: 'pt-br', 'en-us', etc." class="form-control input-md">
+	  <input ng-model="translation.language" id="" name="" type="text" placeholder="Eg: 'pt-br', 'en-us', etc." class="form-control input-md">
 	  </div>
 	</div>
 	<div class="form-group">
