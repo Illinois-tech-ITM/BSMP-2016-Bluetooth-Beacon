@@ -2,11 +2,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/languageMenu"
+        android:title="@string/languageMenu"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/refresh"
         android:title="Refresh"
         app:showAsAction="ifRoom" />
     <!--<item-->
-        <!--android:id="@+id/aboutMenu"-->
-        <!--android:title="@string/aboutMenu"-->
-        <!--app:showAsAction="ifRoom" />-->
+    <!--android:id="@+id/aboutMenu"-->
+    <!--android:title="@string/aboutMenu"-->
+    <!--app:showAsAction="ifRoom" />-->
 </menu>

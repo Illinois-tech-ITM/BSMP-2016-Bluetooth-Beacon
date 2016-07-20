@@ -109,7 +109,8 @@ public class MasterpieceFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.menu_main, menu);
+        menu.clear();
+        inflater.inflate(R.menu.menu_fragment, menu);
         mLanguageMenuItem = menu.findItem(R.id.languageMenu);
     }
 

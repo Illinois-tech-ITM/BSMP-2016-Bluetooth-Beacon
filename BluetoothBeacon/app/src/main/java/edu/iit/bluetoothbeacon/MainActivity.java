@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -24,6 +25,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageRequest;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import edu.iit.bluetoothbeacon.models.Masterpiece;
@@ -40,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
     private BluetoothAdapter mAdapter;
     private BluetoothDevice mActiveDevice;
     private HashMap<BluetoothDevice, Integer> mDevicesList; //key: Beacon | value: RSSI (sinal strength)
+    private ArrayList<String> mRegisteredDevices;
     private String mCurrentLanguage;
 
     private long mStart = 0;
@@ -55,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
         setContentView(R.layout.activity_main);
         mAdapter = BluetoothAdapter.getDefaultAdapter();
         mDevicesList = new HashMap<>();
+        mRegisteredDevices = new ArrayList<>();
         mCurrentLanguage = "pt-br";
         mActiveDevice = null;
         controller = Controller.getInstance(this, this);
@@ -68,30 +85,31 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
         public void onLeScan(BluetoothDevice bluetoothDevice, int rssi, byte[] bytes) {
             long delta = (SystemClock.elapsedRealtime() - mStart);
             if (mActiveDevice != null &&  delta > 2101546475){
-                Log.d("TEST", "Elapsed seconds: " + delta);
+//                Log.d("TEST", "Elapsed seconds: " + delta);
                 mActiveDevice = null;
                 switchToFragment(new WelcomeFragment().newInstance(), false);
             }
-            if (bluetoothDevice.getName() == null || !bluetoothDevice.getName().matches("DVC\\d\\d\\d\\d")) return;
-//            Log.d("Test", "Address: " + bluetoothDevice + " | RSSI: "+ rssi);
+//            Log.d("SCANNING", "Name: " + bluetoothDevice.getName());
+            if (bluetoothDevice.getName() == null || !mRegisteredDevices.contains(bluetoothDevice.getName())) return;
+//            Log.d("SCANNING", "Name: " + bluetoothDevice.getName()  + "| Address: " + bluetoothDevice + " | RSSI: "+ rssi);
             mDevicesList.put(bluetoothDevice, rssi);
 
             if (mActiveDevice == null && rssi > NEARBY_RSSI){
                 mActiveDevice = bluetoothDevice;
-                controller.requestMasterpieceInfo(bluetoothDevice.getName().toLowerCase());
+                controller.requestMasterpieceInfo(bluetoothDevice.getName());
                 return;
             }
 
             if (mActiveDevice != null && rssi - mDevicesList.get(mActiveDevice) > 20){
                 mActiveDevice = bluetoothDevice;
-                controller.requestMasterpieceInfo(bluetoothDevice.getName().toLowerCase());
+                controller.requestMasterpieceInfo(bluetoothDevice.getName());
             } else if (mActiveDevice != null && bluetoothDevice.getAddress().equals(mActiveDevice.getAddress()) && rssi < MIN_RSSI){
                 mActiveDevice = null;
                 switchToFragment(new WelcomeFragment().newInstance(), false);
             }
             if (mActiveDevice != null && bluetoothDevice.getAddress().equals(mActiveDevice.getAddress())){
                 mStart = SystemClock.elapsedRealtime();
-                Log.d("Test", "Start time: " + mStart);
+//                Log.d("Test", "Start time: " + mStart);
             }
         }
     };
@@ -105,6 +123,8 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        } else {
+            startScanning();
         }
 
     }
@@ -116,14 +136,7 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
             case MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    if (!mAdapter.isEnabled()) {
-                        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-                    } else {
-                        Log.d("Test", "Scanning for devices...");
-                        mAdapter.startLeScan(scanCallback);
-                    }
-
+                    startScanning();
                 } else {
                     Log.d("TEST", "We need this permission :(");
                 }
@@ -149,24 +162,64 @@ public class MainActivity extends AppCompatActivity implements OnResponseReceive
         stopRepeatingTask();
     }
 
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        MenuInflater inflater = getMenuInflater();
-//        inflater.inflate(R.menu.menu_main, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        // Handle item selection
-//        switch (item.getItemId()) {
-//            case R.id.aboutMenu:
-//                about();
-//                return true;
-//            default:
-//                return super.onOptionsItemSelected(item);
-//        }
-//    }
+    private void startScanning(){
+        String url = "http://floating-journey-50760.herokuapp.com/getArtworks";
+        RequestQueue queue = Volley.newRequestQueue(this);
+        final JsonArrayRequest request = new JsonArrayRequest(url, new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                mRegisteredDevices.clear();
+                for (int i=0;i<response.length();i++){
+                    try {
+                        JSONObject json = (JSONObject) response.get(i);
+                        mRegisteredDevices.add(json.getString("dvcKey"));
+                        Log.d("RDEVICES", json.getString("dvcKey"));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (!mAdapter.isEnabled()) {
+                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                } else {
+                    Log.d("Test", "Scanning for devices...");
+                    mAdapter.startLeScan(scanCallback);
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d("RDEVICES", error.getMessage());
+            }
+        });
+        queue.add(request);
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.refresh:
+                refreshDevices();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void refreshDevices() {
+        mAdapter.stopLeScan(scanCallback);
+        Log.d("REFRESH", "Refreshing...");
+        startScanning();
+    }
 //
 //    private void about() {
 //        //switchToFragment(new AboutFragment().newInstance(), true);
