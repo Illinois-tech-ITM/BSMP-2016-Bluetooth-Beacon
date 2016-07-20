@@ -40,13 +40,26 @@
     		<span class="list-group-item">
     			<h5><b>Device Key:</b> {{selectedDevice.dvcKey}}</h5>
     			<h5><b>Device Name:</b> {{selectedDevice.dvcName}}</h5>
-    			<h5><b>Image URL:</b> {{selectedDevice.imageURL}}</h5>
-    			<h5><b>Preview:</b> <img ng-show="selectedDevice.imageURL" ng-src="{{selectedDevice.imageURL}}"></h5>
     			<h5><b>Translations</b></h5>
     			<a class="list-group-item img-rounded" href="" ng-repeat="translation in selectedDevice.translations" ng-click="onTranslationClick(translation)"> {{translation.language}} </a>
+    			<h5><b>Image URL:</b> {{selectedDevice.imageURL}}</h5>
+    			<h5><b>Preview:</b> <img ng-show="selectedDevice.imageURL" ng-src="{{selectedDevice.imageURL}}"></h5>
     		</span>
   		</div>
   		<button ng-click="addNewTranslation(selectedDevice)" class="btn btn-primary">Add Translation</button>
+  		<button ng-click="editingDevice = true" class="btn btn-warning">Edit Info</button>
+	</div>
+		
+	<!-- Editing device view -->
+	<div class="form-group col-md-4 img-rounded" ng-show="selectedDevice && editingDevice">
+  		<div class="list-group">
+    		<span class="list-group-item">
+   				<h5><b>Device Key:</b> {{selectedDevice.dvcKey}}</h5>
+    			<h5><b>Device Name:</b></h5><input ng-model="selectedDevice.dvcName" class="form-control input-md">
+    			<h5><b>Image URL:</b></h5><input ng-model="selectedDevice.imageURL" class="form-control input-md">
+    		</span>
+  		</div>
+  		<button ng-click="saveEditedDevice(selectedDevice)" class="btn btn-primary">Save</button>
 	</div>
 	
 	<!-- View for registering a new device -->

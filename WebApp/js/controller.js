@@ -128,10 +128,12 @@ app.controller('mainCtrl', function($scope, $http, sessionInfo){
 			$scope.selectedDevice.translations = [];
 		}
 		$scope.addingTranslation = false;
+		$scope.editingDevice = false;
 	}
 	$scope.addNewDevice = function(){
 		$scope.selectedDevice = null;
 		$scope.addingTranslation = false;
+		$scope.editingDevice = false;
 	}
 	$scope.saveNewDevice = function(newDevice){
 		if (!newDevice || !newDevice.dvcKey){
@@ -201,6 +203,20 @@ app.controller('mainCtrl', function($scope, $http, sessionInfo){
 		$scope.oldTranslation = translation;
 		$scope.addingTranslation = true;
 		$scope.editingTranslation = true;
+	}
+	
+	$scope.saveEditedDevice = function(selectedDevice){
+		$http.post('https://floating-journey-50760.herokuapp.com/addOrUpdateArtwork', selectedDevice, config).then(function(res){
+			console.log(res);
+			for (var i=0;i<$scope.devices.length;i++){
+				if ($scope.devices[i].dvcKey === selectedDevice.dvcKey){
+					$scope.devices[i] = selectedDevice;
+				}
+			}
+			$scope.editingDevice = false;
+		}, function(err){
+			alert(err);
+		});
 	}
 	
 });
