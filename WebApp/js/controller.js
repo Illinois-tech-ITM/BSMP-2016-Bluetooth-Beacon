@@ -27,38 +27,100 @@ app.service('sessionInfo', function(){
     }
 });
 
-app.controller('loginCtrl', function($scope, $location, sessionInfo){
-	$scope.login = function(username){
-		console.log("bla");
-		sessionInfo.setSession(username);
-		$location.path("form");
+app.controller('loginCtrl', function($scope, $location, $http, sessionInfo){
+	$scope.login = function(username, password){
+		var config = {
+			
+			headers:  {
+				"Accept": "application/json",
+				"Content-Type": "application/json",
+        		"name": username,
+        		"password" : password
+    		}
+		};
+		
+		var successCallback = function(res){
+			console.log(res.headers());
+			var session = {
+				"username": username,
+				"sessionId": res.headers().sessionid
+			}
+			sessionInfo.setSession(session);
+			$location.path("form");
+		};
+		
+		var errorCallback = function(err){
+			alert(err);
+		};
+		
+		$http.get('https://floating-journey-50760.herokuapp.com/authenticate', config).then(successCallback, errorCallback);
+		
+	};
+	
+	$scope.newAcc = function(name, pass){
+		var config = {
+			headers:  {
+				"Accept": "application/json",
+				"Content-Type": "application/json"
+    		}
+		};
+		
+		var data = {
+			"name": name,
+			"password": pass
+		}
+		
+		var successCallback = function(res){
+			$scope.login(name, pass);
+			console.log(res);
+		};
+		
+		var errorCallback = function(err){
+			alert(err);
+		};
+		
+		$http.post('https://floating-journey-50760.herokuapp.com/addUser', data, config).then(successCallback, errorCallback);
 	}
 });
 
 app.controller('navbarCtrl', function($scope, $location, sessionInfo){
-	$scope.session = {};
-	$scope.session.name = sessionInfo.getSession();
+	$scope.session = sessionInfo.getSession();
 
 	$scope.logout = function(){
 		$location.path("index");
 	};
 });
 
-app.controller('mainCtrl', function($scope, $http){
+app.controller('mainCtrl', function($scope, $http, sessionInfo){
 	$scope.addingTranslation = false;
 	$scope.selectedDevice = null;
 	$scope.newDevice = {};
 	$scope.newDevice.translations = [];
+	$scope.devices = [];
+	$scope.session = sessionInfo.getSession();
+	
+	var config = {
+		headers:  {
+    		"sessionId": $scope.session.sessionId
+		}
+	};
+	
+	console.log(config);
+	
+	var successCallback = function(res){
+		console.log(res);
+		for (var i=0;i<res.data.length;i++)
+			$scope.devices.push(res.data[i]);
+	};
+	
+	var errorCallback = function(err){
+		alert(err);
+	};
 
-	$scope.devices = [{
-		key: "DVC0000",
-		name: "Mona Lisa"
-	}, {
-		key: "DVC0001",
-		name: "The Scream"
-	}];
+	$http.get('https://floating-journey-50760.herokuapp.com/getArtworksByUser', config).then(successCallback, errorCallback);
 
 	$scope.onDeviceClick = function(device){
+		console.log(device);
 		$scope.selectedDevice = device;
 		if (!$scope.selectedDevice.translations) {
 			$scope.selectedDevice.translations = [];

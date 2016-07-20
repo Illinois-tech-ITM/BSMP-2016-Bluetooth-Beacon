@@ -14,7 +14,7 @@
 	      <li><a href="">Home</a></li>
 	    </ul>
 	    <ul class="nav navbar-nav navbar-right">
-	      <li ng-show="session"><a><span class="glyphicon glyphicon-user"></span><span> {{session.name}}</span></a></li>
+	      <li ng-show="session"><a><span class="glyphicon glyphicon-user"></span><span> {{session.username}}</span></a></li>
 	      <li ng-show="session"><a href="" ng-click="logout()"><span class="glyphicon glyphicon-log-out"></span><span> Logout</span></a></li>
 	    </ul>
 	  </div>
@@ -25,8 +25,8 @@
   		<div class="list-group">
     		<a class="list-group-item disabled title">Registered Devices</a>
     		<a href="" ng-repeat="device in devices" class="list-group-item" ng-click="onDeviceClick(device)">
-    			<div>{{device.key}}</div>
-    			<div>{{device.name}}</div>
+    			<div>{{device.dvcKey}}</div>
+    			<div>{{device.dvcName}}</div>
     		</a>
     		<a href="" class="list-group-item" ng-click="addNewDevice()">Add new device...</a>
   		</div>
@@ -35,10 +35,10 @@
 	<div class="form-group col-md-4 img-rounded" ng-show="selectedDevice">
   		<div class="list-group">
     		<span class="list-group-item">
-    			<h5><b>Device Key:</b> {{selectedDevice.key}}</h5>
-    			<h5><b>Device Name:</b> {{selectedDevice.name}}</h5>
+    			<h5><b>Device Key:</b> {{selectedDevice.dvcKey}}</h5>
+    			<h5><b>Device Name:</b> {{selectedDevice.dvcName}}</h5>
     			<h5><b>Translations</b></h5>
-    			<a class="list-group-item img-rounded" ng-repeat="translation in selectedDevice.translations"> {{translation.code}} </a>
+    			<a class="list-group-item img-rounded" ng-repeat="translation in selectedDevice.translations"> {{translation.language}} </a>
     		</span>
   		</div>
   		<button ng-click="addNewTranslation(selectedDevice)" class="btn btn-primary">Add Translation</button>
@@ -50,18 +50,18 @@
 	<div class="form-group">
 	  <label class="control-label" for="">Device Key</label>
 	  <div>
-	  <input ng-model="newDevice.key" id="" name="" type="text" placeholder="DVCXXXX" class="form-control input-md">
+	  <input ng-model="newDevice.dvcKey" id="" name="" type="text" placeholder="DVCXXXX" class="form-control input-md">
 	  </div>
 	</div>
 	<div class="form-group">
 	  <label class="control-label" for="">Device Name</label>  
 	  <div >
-	  <input ng-model="newDevice.name" id="" name="" type="text" placeholder="Mona Lisa" class="form-control input-md">
+	  <input ng-model="newDevice.dvcName" id="" name="" type="text" placeholder="Mona Lisa" class="form-control input-md">
 	  </div>
 	</div>
 	<div class="form-group">
 		<h5><b>Translations</b></h5>
-		<a class="list-group-item" ng-repeat="translation in newDevice.translations"> {{translation.code}} </a>
+		<a class="list-group-item" ng-repeat="translation in newDevice.translations"> {{translation.language}} </a>
 		<a href="" class="list-group-item img-rounded" ng-click="addNewTranslation()">Add new translation...</a>
 	</div>
 	<div class="form-group">
@@ -91,7 +91,7 @@
 	<div class="form-group">
 	  <label class="control-label" for="">Description</label>  
 	  <div>
-	  <input ng-model="translation.description" id="" name="" type="text" placeholder="Mona Lisa" class="form-control input-md">
+	  <input ng-model="translation.content" id="" name="" type="text" placeholder="Mona Lisa" class="form-control input-md">
 	  </div>
 	</div>
 	<div class="form-group">
