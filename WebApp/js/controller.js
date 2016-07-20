@@ -219,4 +219,23 @@ app.controller('mainCtrl', function($scope, $http, sessionInfo){
 		});
 	}
 	
+	$scope.deleteDevice = function(selectedDevice){
+		var config = {
+			headers:  {
+	    		"sessionId": $scope.session.sessionId
+			}
+		};
+		
+		if (confirm("Are you sure?")) {
+	        $http.delete('https://floating-journey-50760.herokuapp.com/deleteArtwork?dvcKey=' + selectedDevice.dvcKey, config).then(function(res){
+				var index = $scope.devices.indexOf(selectedDevice);
+				if (index > -1){
+					$scope.devices.splice(index, 1);
+				}
+			}, function(err){
+				alert(err);
+			});
+    	}
+	}
+	
 });
