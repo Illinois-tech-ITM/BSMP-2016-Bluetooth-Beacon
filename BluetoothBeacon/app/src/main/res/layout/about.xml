@@ -8,7 +8,7 @@
         android:layout_width="385dp"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="BlueMap is an open application developed to help people connect their devices using the Beacon technology."
+        android:text="BlueBeacon is an open source and free application developed to allow people to enjoy the Bluetooth Low-Energy technology on their smartphones."
         android:id="@+id/textView"
         android:layout_gravity="center_horizontal"
         android:layout_alignParentTop="true"
