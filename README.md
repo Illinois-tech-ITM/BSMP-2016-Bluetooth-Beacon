@@ -1,2 +1,4 @@
 # BSMP-2016-Bluetooth-Beacon
-This is a repo that contains the code and schematics for creating a smart Bluetooth Beacon system
+The technology is innovating increasingly every day to make people's lives easier. Thinking about it is that the BlueBeacon project was developed. BlueBeacon is an application that uses Bluetooth Low Energy (LE) Beacons for location indoors. In this particular case, we demonstrate the use of this type of application in museums to facilitate the navigation of users and provide details about selected artworks in different languages.
+
+The BlueBeacon software was developed in Java using Android Studio. It has three different screens: the welcome screen, about and activity. The welcome screen is the first screen that the app shows once you open it. If the user gets close to a beacon, the activity screen will show up, along with a miniature of the art piece linked to that beacon and its information.
